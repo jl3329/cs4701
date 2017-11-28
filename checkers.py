@@ -17,11 +17,14 @@ EMPTY = 0
 class CheckersApp(App):
     def build(self):
     	game = CheckersGame(rows=8, cols=8)
-    	game.initialize_game()
+    	game.initialize_board()
         return game
 
 class CheckersTile(Button):
-	possible_move = BooleanProperty(False)
+	possible_moves = []
+	selected = None
+
+	is_possible_move = BooleanProperty(False)
 	piece = OptionProperty(EMPTY, options=[
 		EMPTY, 
 		RED_PIECE, 
@@ -38,30 +41,51 @@ class CheckersTile(Button):
 			self.col = kwargs['col']
 		else:
 			raise Exception('Please specify the position with the "row" and "col" arguments')
-		
-		if 'game' in kwargs:
-			self.game = kwargs['game']
+
+	def set_possible(self, possible):
+		self.is_possible_move = possible
+	def select(self, piece):
+		self.is_selected = piece
+
+	def empty_possible_moves(self):
+		#unhighlight possible moves for previous piece
+		for pos in CheckersTile.possible_moves:
+			self.parent.cell(pos[0], pos[1]).set_possible(False)
+		CheckersTile.possible_moves = []
+
+
+	def on_press(self):
+		super(CheckersTile, self).on_press()
+
+		#selected a piece, show all possible moves
+		if not self.is_possible_move:
+			self.empty_possible_moves()
+			jumps, moves = self.parent.get_legal_moves(self.row, self.col)
+			CheckersTile.possible_moves = jumps if jumps else moves
+			for move in CheckersTile.possible_moves:
+				self.parent.cell(move[0], move[1]).set_possible(True)
+			CheckersTile.selected = self
 		else:
-			raise Exception('Please specify what game this piece belongs to')
-		self.bind(on_press=self.callback)
+			print 'yes'
+			piece_row = CheckersTile.selected.row
+			piece_col = CheckersTile.selected.col
+			self.parent.move_piece(piece_row, piece_col, self.row, self.col)
+			self.empty_possible_moves()
 
-	def callback(instance, value):
-		jumps, moves = instance.game.get_legal_moves(instance.row, instance.col)
-		print instance.row, instance.col
-		print jumps, moves
-		if jumps:
-			for jump in jumps:
-				instance.game.cell(jump[0], jump[1]).border = [1,1,0,0]
+	def on_is_possible_move(self, instance, possible):
+		if possible:
+			self.border = [0,0,0,0]
 		else:
-			for move in moves:
-				instance.game.cell(move[0], move[1]).border = [1,1,0,0]
+			self.border = [16,16,16,16]
 
-
+	def on_piece(self, instance, piece):
+		self.text = str(piece)
 
 class CheckersGame(SimpleTableLayout):
+	#not necessary but nice to have
 	board = ListProperty([[0 for i in range(8)] for j in range(8)])
 
-	def initialize_game(self):
+	def initialize_board(self):
 		for row in range(8):
 			for col in range(8):
 				if col < 3 and (row + col) % 2 ==1:
@@ -75,10 +99,6 @@ class CheckersGame(SimpleTableLayout):
 				else:
 					self.add_widget(
 						CheckersTile(row=row, col=col, game=self, text='Empty'))
-		for i in self.board:
-			print i 
-
-	# def select(self, row, col):
 
 	def different_color(self, row1, col1, row2, col2):
 		return self.board[row1][col1] * self.board[row2][col2] < 0
@@ -170,13 +190,16 @@ class CheckersGame(SimpleTableLayout):
 	#PRECONDITION: move is valid
 	def move_piece(self, start_row, start_col, end_row, end_col):
 		self.board[end_row][end_col] = self.board[start_row][start_col]
+		self.cell(end_row, end_col).piece = self.cell(start_row, start_col).piece
 
 		if abs(start_row - end_row) == 2: # jump
 			mid_row = (start_row + end_row) / 2
 			mid_col = (start_col + end_col) / 2
 			self.board[mid_row][mid_col] = 0
+			self.cell(mid_row, mid_col).piece = EMPTY
 
 		self.board[start_row][start_col] = 0
+		self.cell(start_row, start_col).piece = EMPTY
 
 	def make_king(self, row, col):
 		if self.is_black(row, col):
