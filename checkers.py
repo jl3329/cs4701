@@ -3,10 +3,12 @@ os.environ['KIVY_TEXT'] = 'pil'
 import kivy
 from kivy.app import App
 from kivy.uix.widget import Widget
-from kivy.properties import ListProperty, BooleanProperty, OptionProperty
+from kivy.uix.image import Image
+from kivy.properties import ListProperty, BooleanProperty, OptionProperty, StringProperty
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.button import Button
 from simpletablelayout import SimpleTableLayout
+from kivy.graphics import Ellipse
 
 RED_PIECE = -1
 RED_KING = -2
@@ -15,10 +17,10 @@ BLACK_KING = 2
 EMPTY = 0
 
 class CheckersApp(App):
-    def build(self):
-    	game = CheckersGame(rows=8, cols=8)
-    	game.initialize_board()
-        return game
+	def build(self):
+		game = CheckersGame(rows=8, cols=8)
+		game.initialize_board()
+		return game
 
 class CheckersTile(Button):
 	possible_moves = []
@@ -38,9 +40,12 @@ class CheckersTile(Button):
 
 		if 'row' in kwargs and 'col' in kwargs:
 			self.row = kwargs['row']
-			self.col = kwargs['col']
+			self.col = kwargs['col'] 
 		else:
 			raise Exception('Please specify the position with the "row" and "col" arguments')
+
+		if (self.row + self.col) % 2 == 0:
+			self.background_color = [1,0,0,1]
 
 	def set_possible(self, possible):
 		self.is_possible_move = possible
@@ -52,7 +57,6 @@ class CheckersTile(Button):
 		for pos in CheckersTile.possible_moves:
 			self.parent.cell(pos[0], pos[1]).set_possible(False)
 		CheckersTile.possible_moves = []
-
 
 	def on_press(self):
 		super(CheckersTile, self).on_press()
@@ -66,7 +70,6 @@ class CheckersTile(Button):
 				self.parent.cell(move[0], move[1]).set_possible(True)
 			CheckersTile.selected = self
 		else:
-			print 'yes'
 			piece_row = CheckersTile.selected.row
 			piece_col = CheckersTile.selected.col
 			self.parent.move_piece(piece_row, piece_col, self.row, self.col)
@@ -79,44 +82,54 @@ class CheckersTile(Button):
 			self.border = [16,16,16,16]
 
 	def on_piece(self, instance, piece):
-		self.text = str(piece)
-
+		if piece == RED_PIECE:
+			self.background_normal = 'red_piece.png'
+		elif piece == BLACK_PIECE:
+			self.background_normal = 'black_piece.png'
+		elif piece == RED_KING:
+			self.background_normal = 'red_king.png'
+		elif piece == BLACK_KING:
+			self.background_normal = 'black_king.png'
+		else:
+			self.background_normal = 'atlas://data/images/defaulttheme/button'
+		
 class CheckersGame(SimpleTableLayout):
-	#not necessary but nice to have
-	board = ListProperty([[0 for i in range(8)] for j in range(8)])
-
 	def initialize_board(self):
 		for row in range(8):
 			for col in range(8):
-				if col < 3 and (row + col) % 2 ==1:
-					self.board[row][col] = BLACK_PIECE
+				if col < 3 and (row + col) % 2 == 1:
 					self.add_widget(
-						CheckersTile(row=row, col=col, piece=BLACK_PIECE, game=self, text='Black Piece'))
+						CheckersTile(row=row, col=col, piece=BLACK_PIECE, game=self))
 				elif col >= 5 and col < 8 and (row + col) % 2 ==1:
-					self.board[row][col] = RED_PIECE
 					self.add_widget(
-						CheckersTile(row=row, col=col, piece=RED_PIECE, game=self, text='Red Piece'))
+						CheckersTile(row=row, col=col, piece=RED_PIECE, game=self))
 				else:
 					self.add_widget(
-						CheckersTile(row=row, col=col, game=self, text='Empty'))
+						CheckersTile(row=row, col=col, game=self))
 
 	def different_color(self, row1, col1, row2, col2):
-		return self.board[row1][col1] * self.board[row2][col2] < 0
+		return self.get_piece(row1, col1) * self.get_piece(row2, col2) < 0
+
+	def get_piece(self, row, col):
+		return self.cell(row, col).piece
+
+	def set_piece(self, row, col, piece):
+		self.cell(row, col).piece = piece
 
 	def is_empty(self, row, col):
-		return self.board[row][col] == EMPTY
+		return self.get_piece(row, col) == EMPTY
 
 	def is_red(self, row, col):
-		return (self.board[row][col] == RED_PIECE or 
-			self.board[row][col] == RED_KING)
+		return (self.get_piece(row, col) == RED_PIECE or 
+			self.get_piece(row, col) == RED_KING)
 
 	def is_black(self, row, col):
-		return (self.board[row][col] == BLACK_PIECE or 
-			self.board[row][col] == BLACK_KING)
+		return (self.get_piece(row, col) == BLACK_PIECE or 
+			self.get_piece(row, col) == BLACK_KING)
 
 	def is_king(self, row, col):
-		return (self.board[row][col] == BLACK_KING or 
-			self.board[row][col] == RED_KING)
+		return (self.get_piece(row, col) == BLACK_KING or 
+			self.get_piece(row, col) == RED_KING)
 
 	def get_possible_jumps(self, row, col):
 		jumps = []
@@ -172,8 +185,7 @@ class CheckersGame(SimpleTableLayout):
 
 	#returns an array of tuples indicating legal positions to move to
 	def get_legal_moves(self, row, col):
-		piece = self.board[row][col]
-		if piece == EMPTY:
+		if self.get_piece(row, col) == EMPTY:
 			return [], []
 		
 		possible_jumps = self.get_possible_jumps(row, col)
@@ -189,23 +201,25 @@ class CheckersGame(SimpleTableLayout):
 
 	#PRECONDITION: move is valid
 	def move_piece(self, start_row, start_col, end_row, end_col):
-		self.board[end_row][end_col] = self.board[start_row][start_col]
-		self.cell(end_row, end_col).piece = self.cell(start_row, start_col).piece
+		self.set_piece(end_row, end_col, self.get_piece(start_row, start_col))
 
 		if abs(start_row - end_row) == 2: # jump
 			mid_row = (start_row + end_row) / 2
 			mid_col = (start_col + end_col) / 2
-			self.board[mid_row][mid_col] = 0
-			self.cell(mid_row, mid_col).piece = EMPTY
+			self.set_piece(mid_row, mid_col, EMPTY) 
 
-		self.board[start_row][start_col] = 0
-		self.cell(start_row, start_col).piece = EMPTY
+		self.set_piece(start_row, start_col, EMPTY)
+
+		if self.is_black(end_row, end_col) and end_col == 7:
+			self.make_king(end_row, end_col)
+		elif self.is_red(end_row, end_col) and end_col == 0:
+			self.make_king(end_row, end_col)
 
 	def make_king(self, row, col):
 		if self.is_black(row, col):
-			self.board[row][col] = BLACK_KING
+			self.set_piece(row, col, BLACK_KING)
 		else:
-			self.board[row][col] = RED_KING
+			self.set_piece(row, col, RED_KING)
 
 	def cell(self, row, col):
 		return self._grid[row][col]
