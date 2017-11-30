@@ -80,7 +80,6 @@ class CheckersTile(Button):
 			# CheckersTile.possible_moves = jumps if jumps else moves
 			if self.parent.all_legal_moves == None:
 				self.parent.all_legal_moves = self.parent.get_all_legal_moves()
-			print self.parent.all_legal_moves
 
 			CheckersTile.possible_moves = self.parent.all_legal_moves.get((self.row, self.col), [])
 			for move in CheckersTile.possible_moves:
@@ -112,7 +111,7 @@ class CheckersTile(Button):
 			self.background_normal = 'atlas://data/images/defaulttheme/button'
 		
 class CheckersGame(SimpleTableLayout):
-	blacks_turn = BooleanProperty(False)
+	blacks_turn = BooleanProperty(True)
 	red_pieces = ListProperty([])
 	black_pieces = ListProperty([])
 	all_legal_moves = None
@@ -128,7 +127,6 @@ class CheckersGame(SimpleTableLayout):
 					self.red_pieces.append((row, col))
 				else:
 					self.add_widget(CheckersTile(row=row, col=col, game=self))
-		self.blacks_turn = True
 
 	def different_color(self, row1, col1, row2, col2):
 		return self.get_piece(row1, col1) * self.get_piece(row2, col2) < 0
@@ -264,9 +262,9 @@ class CheckersGame(SimpleTableLayout):
 		elif self.has_red(end_row, end_col) and end_col == 0:
 			self.make_king(end_row, end_col)
 
-		jumps, _ = self.get_legal_moves(end_row, end_col, True)
-		if jumps:
-			self.all_legal_moves = jumps
+		jumps, _ = self.get_legal_moves(end_row, end_col, self.has_black(end_row, end_col))
+		if jumps and abs(start_row - end_row) == 2:
+			self.all_legal_moves = {(end_row, end_col) : jumps}
 		else:
 			self.all_legal_moves = None
 			self.blacks_turn = not self.blacks_turn
