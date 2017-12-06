@@ -200,17 +200,28 @@ class CheckersGame(SimpleTableLayout):
 		elif instance.text == 'Smart AI vs Smart AI':
 			self.AIvAI=True
 
+	def board_visual(self):
+		b = ''
+		for x in range(8):
+			for y in range(8):
+				b = b + (' o ' if (x,y) in self.black_pieces else (' x ' if (x,y) in self.red_pieces else ' . '))
+			b = b + '\n'	
+		print(b)
+
 	def initialize_board(self, instance):
 		for row in range(8):
 			for col in range(8):
 				if col < 3 and (row + col) % 2 == 1:
-					self.add_widget(CheckersTile(row=row, col=col, piece=BLACK_PIECE))
+					if not self.minimaxing:
+						self.add_widget(CheckersTile(row=row, col=col, piece=BLACK_PIECE))
 					self.black_pieces.append((row, col))
 				elif col >= 5 and col < 8 and (row + col) % 2 ==1:
-					self.add_widget(CheckersTile(row=row, col=col, piece=RED_PIECE))
+					if not self.minimaxing:
+						self.add_widget(CheckersTile(row=row, col=col, piece=RED_PIECE))
 					self.red_pieces.append((row, col))
 				else:
-					self.add_widget(CheckersTile(row=row, col=col, game=self))
+					if not self.minimaxing:
+						self.add_widget(CheckersTile(row=row, col=col, game=self))
 
 	def different_color(self, row1, col1, row2, col2):
 		return ((row1, col1) in self.black_pieces and (row2, col2) in self.red_pieces) or ((row1, col1) in self.red_pieces and (row2, col2) in self.black_pieces)
@@ -380,10 +391,13 @@ class CheckersGame(SimpleTableLayout):
 			self.blacks_turn = not self.blacks_turn
 
 		if self.AIvAI and not self.minimaxing:
+			self.board_visual()
 			if self.more_random:
 				self.random_move()
-			else:
+			elif not self.blacks_turn:
 				self.smart_move()
+			else:
+				self.random_move()
 
 	def make_king(self, row, col):
 		if self.has_black(row, col):
@@ -418,6 +432,7 @@ class CheckersGame(SimpleTableLayout):
 
 	def random_move(self):
 		if self.get_all_legal_moves():
+			print(self.blacks_turn)
 			start_move = random.choice(self.get_all_legal_moves().keys())
 			end_move = random.choice(self.get_all_legal_moves().get(start_move))
 			self.AI = True
@@ -438,10 +453,11 @@ class CheckersGame(SimpleTableLayout):
 
 class Minimax():
 
-	depth = 3
+	depth = 6
 
 	def copy_board(self,board):
 		new_board = CheckersGame(rows=8, cols=8)
+		new_board.minimaxing = True
 		new_board.initialize_board(new_board)
 		new_board.red_pieces = board.red_pieces
 		new_board.black_pieces = board.black_pieces
@@ -466,7 +482,6 @@ class Minimax():
 		for start in moves:
 			for end in moves.get(start):
 				new_board = self.copy_board(board)
-				new_board.minimaxing = True
 				new_board.move_piece(start[0],start[1],end[0],end[1])
 				new_score = -self.negamax(new_board, depth - 1, -beta, -localalpha)
 				best_score = max(new_score, best_score)
@@ -484,7 +499,6 @@ class Minimax():
 		for start in moves:
 			for end in moves.get(start):
 				new_board = self.copy_board(board)
-				new_board.minimaxing = True
 				new_board.move_piece(start[0],start[1],end[0],end[1])
 				new_score = -self.negamax(new_board, self.depth - 1, alpha, -alpha)
 				print(new_score)
