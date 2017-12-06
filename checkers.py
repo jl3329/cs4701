@@ -10,15 +10,11 @@ from kivy.uix.button import Button
 from kivy.uix.popup import Popup
 from kivy.uix.label import Label
 from simpletablelayout import SimpleTableLayout
-<<<<<<< HEAD
 from kivy.uix.boxlayout import BoxLayout
 from kivy.graphics import Ellipse
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.modalview import ModalView
 import random
-=======
-from kivy.graphics import Ellipse
->>>>>>> 37ed92d39fc6cec5b8281f4940fb1ce70f32b7c0
 
 RED_PIECE = -1
 RED_KING = -2
@@ -29,12 +25,8 @@ EMPTY = 0
 class CheckersApp(App):
 	def build(self):
 		game = CheckersGame(rows=8, cols=8)
-<<<<<<< HEAD
 		menu = game.create_menu()
 		menu.open()
-=======
-		game.initialize_board()
->>>>>>> 37ed92d39fc6cec5b8281f4940fb1ce70f32b7c0
 		return game
 
 class CheckersTile(Button):
@@ -85,7 +77,6 @@ class CheckersTile(Button):
 	def on_press(self):
 		super(CheckersTile, self).on_press()
 
-<<<<<<< HEAD
 		if self.parent.AIvAI:
 			if self.parent.more_random:
 				self.parent.random_move()
@@ -93,8 +84,6 @@ class CheckersTile(Button):
 				self.parent.smart_move()
 			return
 
-=======
->>>>>>> 37ed92d39fc6cec5b8281f4940fb1ce70f32b7c0
 		#selected a piece, show all possible moves
 		if not self.is_possible_move:
 			self.empty_possible_moves()
@@ -114,14 +103,11 @@ class CheckersTile(Button):
 			piece_col = CheckersTile.selected.col
 			self.parent.move_piece(piece_row, piece_col, self.row, self.col)
 			self.empty_possible_moves()
-<<<<<<< HEAD
 			if self.parent.all_legal_moves == None and not self.parent.HvH:
 				if self.parent.random:
 					self.parent.random_move()
 				else:
 					self.parent.smart_move()
-=======
->>>>>>> 37ed92d39fc6cec5b8281f4940fb1ce70f32b7c0
 
 	def on_is_possible_move(self, instance, possible):
 		if possible:
@@ -145,7 +131,6 @@ class CheckersGame(SimpleTableLayout):
 	blacks_turn = BooleanProperty(True)
 	red_pieces = ListProperty([])
 	black_pieces = ListProperty([])
-<<<<<<< HEAD
 	red_kings = ListProperty([])
 	black_kings = ListProperty([])
 	all_legal_moves = None
@@ -216,11 +201,6 @@ class CheckersGame(SimpleTableLayout):
 			self.AIvAI=True
 
 	def initialize_board(self, instance):
-=======
-	all_legal_moves = None
-
-	def initialize_board(self):
->>>>>>> 37ed92d39fc6cec5b8281f4940fb1ce70f32b7c0
 		for row in range(8):
 			for col in range(8):
 				if col < 3 and (row + col) % 2 == 1:
@@ -233,12 +213,8 @@ class CheckersGame(SimpleTableLayout):
 					self.add_widget(CheckersTile(row=row, col=col, game=self))
 
 	def different_color(self, row1, col1, row2, col2):
-<<<<<<< HEAD
 		return ((row1, col1) in self.black_pieces and (row2, col2) in self.red_pieces) or ((row1, col1) in self.red_pieces and (row2, col2) in self.black_pieces)
 		#return self.get_piece(row1, col1) * self.get_piece(row2, col2) < 0
-=======
-		return self.get_piece(row1, col1) * self.get_piece(row2, col2) < 0
->>>>>>> 37ed92d39fc6cec5b8281f4940fb1ce70f32b7c0
 
 	def get_piece(self, row, col):
 		return self.cell(row, col).piece
@@ -247,7 +223,6 @@ class CheckersGame(SimpleTableLayout):
 		self.cell(row, col).piece = piece
 
 	def has_empty(self, row, col):
-<<<<<<< HEAD
 		return (row, col) not in self.black_pieces and (row, col) not in self.red_pieces
 		#return self.cell(row, col).is_empty()
 
@@ -262,18 +237,6 @@ class CheckersGame(SimpleTableLayout):
 	def has_king(self, row, col):
 		return (row, col) in self.black_kings or (row, col) in self.red_kings
 		#return self.cell(row, col).is_king()
-=======
-		return self.cell(row, col).is_empty()
-
-	def has_red(self, row, col):
-		return self.cell(row, col).is_red()
-
-	def has_black(self, row, col):
-		return self.cell(row, col).is_black()
-
-	def has_king(self, row, col):
-		return self.cell(row, col).is_king()
->>>>>>> 37ed92d39fc6cec5b8281f4940fb1ce70f32b7c0
 
 	def get_possible_jumps(self, row, col):
 		jumps = []
@@ -351,10 +314,6 @@ class CheckersGame(SimpleTableLayout):
 		all_jumps = {}
 		all_moves = {}
 		pieces = self.black_pieces if self.blacks_turn else self.red_pieces
-<<<<<<< HEAD
-=======
-		
->>>>>>> 37ed92d39fc6cec5b8281f4940fb1ce70f32b7c0
 		for start_row, start_col in pieces:
 			jumps, moves = self.get_legal_moves(start_row, start_col, self.blacks_turn)
 			if jumps:
@@ -369,7 +328,6 @@ class CheckersGame(SimpleTableLayout):
 		if self.has_black(start_row, start_col):
 			my_pieces = self.black_pieces
 			opponent_pieces = self.red_pieces
-<<<<<<< HEAD
 			my_kings = self.black_kings
 			opponent_kings = self.red_kings
 		elif self.has_red(start_row, start_col):
@@ -383,20 +341,11 @@ class CheckersGame(SimpleTableLayout):
 		my_pieces.append((end_row, end_col))
 		if (start_row, start_col) in my_kings:
 			my_kings.append((end_row, end_col))
-=======
-		elif self.has_red(start_row, start_col):
-			my_pieces = self.red_pieces
-			opponent_pieces = self.black_pieces
-
-		self.set_piece(end_row, end_col, self.get_piece(start_row, start_col))
-		my_pieces.append((end_row, end_col))
->>>>>>> 37ed92d39fc6cec5b8281f4940fb1ce70f32b7c0
 
 		if abs(start_row - end_row) == 2: # jump
 			mid_row = (start_row + end_row) / 2
 			mid_col = (start_col + end_col) / 2
 
-<<<<<<< HEAD
 			if not self.minimaxing:
 				self.set_piece(mid_row, mid_col, EMPTY)
 			opponent_pieces.remove((mid_row, mid_col))
@@ -420,40 +369,22 @@ class CheckersGame(SimpleTableLayout):
 			if not self.minimaxing:
 				self.make_king(end_row, end_col)
 			self.red_kings.append((end_row, end_col))
-=======
-			self.set_piece(mid_row, mid_col, EMPTY)
-			opponent_pieces.remove((mid_row, mid_col))
-
-		self.set_piece(start_row, start_col, EMPTY)
-		my_pieces.remove((start_row, start_col))
-
-		if self.has_black(end_row, end_col) and end_col == 7:
-			self.make_king(end_row, end_col)
-		elif self.has_red(end_row, end_col) and end_col == 0:
-			self.make_king(end_row, end_col)
->>>>>>> 37ed92d39fc6cec5b8281f4940fb1ce70f32b7c0
 
 		jumps, _ = self.get_legal_moves(end_row, end_col, self.has_black(end_row, end_col))
 		if jumps and abs(start_row - end_row) == 2:
 			self.all_legal_moves = {(end_row, end_col) : jumps}
-<<<<<<< HEAD
 			if (self.AIvAI or self.HvAI) and self.AI and not self.minimaxing:
 				self.move_piece(end_row, end_col, jumps[0][0], jumps[0][1])
-=======
->>>>>>> 37ed92d39fc6cec5b8281f4940fb1ce70f32b7c0
 		else:
 			self.all_legal_moves = None
 			self.blacks_turn = not self.blacks_turn
 
-<<<<<<< HEAD
 		if self.AIvAI and not self.minimaxing:
 			if self.more_random:
 				self.random_move()
 			else:
 				self.smart_move()
 
-=======
->>>>>>> 37ed92d39fc6cec5b8281f4940fb1ce70f32b7c0
 	def make_king(self, row, col):
 		if self.has_black(row, col):
 			self.set_piece(row, col, BLACK_KING)
@@ -474,7 +405,6 @@ class CheckersGame(SimpleTableLayout):
 		return victory_screen
 
 	def on_black_pieces(self, instance, pieces):
-<<<<<<< HEAD
 		if len(pieces) == 0 and not self.minimaxing:
 			victory_screen = self.create_victory_screen(False)
 			victory_screen.open()
@@ -562,16 +492,6 @@ class Minimax():
 					alpha = new_score
 					best_move = (start[0],start[1],end[0],end[1])
 		return best_move
-=======
-		if len(pieces) == 0:
-			victory_screen = self.create_victory_screen(False)
-			victory_screen.open()
-
-	def on_red_pieces(self, instance, pieces):
-		if len(pieces) == 0:
-			victory_screen = self.create_victory_screen(True)
-			victory_screen.open()
->>>>>>> 37ed92d39fc6cec5b8281f4940fb1ce70f32b7c0
 
 if __name__ == '__main__':
 	CheckersApp().run()
