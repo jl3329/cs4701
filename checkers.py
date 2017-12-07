@@ -30,6 +30,7 @@ class CheckersApp(App):
 		# menu.open()
 		game.AIvAI = True
 		game.initialize_board(None)
+		game.cell(0,0).on_press()
 		self.game = game
 		return game
 
@@ -133,6 +134,9 @@ class CheckersTile(Button):
 		else:
 			self.background_normal = 'atlas://data/images/defaulttheme/button'
 
+iterations = 0
+max_iterations = 85
+
 class CheckersGame(SimpleTableLayout):
 	blacks_turn = BooleanProperty(True)
 	red_pieces = ListProperty([])
@@ -229,20 +233,7 @@ class CheckersGame(SimpleTableLayout):
 				else:
 					if not self.minimaxing:
 						self.add_widget(CheckersTile(row=row, col=col, game=self))
-
-	def reset_board(self):
-		blacks_turn = BooleanProperty(True)
-		red_pieces = ListProperty([])
-		black_pieces = ListProperty([])
-		red_kings = ListProperty([])
-		black_kings = ListProperty([])
-		all_legal_moves = None
-		red_won = BooleanProperty(False)
-		black_won = BooleanProperty(False)
-		# print 'children', len(self.children)
-		self.clear_widgets()
-		# print 'children', len(self.children)
-		self.initialize_board(None)
+		self.do_layout()
 
 	def different_color(self, row1, col1, row2, col2):
 		return ((row1, col1) in self.black_pieces and (row2, col2) in self.red_pieces) or ((row1, col1) in self.red_pieces and (row2, col2) in self.black_pieces)
@@ -452,16 +443,8 @@ class CheckersGame(SimpleTableLayout):
 
 			with open('smart_vs_smart.csv', 'ab') as f:
 				writer = csv.writer(f)
-				print [0, len(self.black_pieces), len(self.black_kings), len(self.red_pieces), len(self.red_kings)]
 				writer.writerow([0, len(self.black_pieces), len(self.black_kings), len(self.red_pieces), len(self.red_kings)])
-			# global iterations
-			# if iterations < max_iterations:
-			# 	iterations += 1
-			# 	self.reset_board()
-			# 	self.cell(0,0).on_press()
-			# else:
-			# 	self.create_victory_screen(True).open()
-			App.get_running_app.stop()
+			quit()
 
 	def on_red_won(self, instance, red_victory):
 		if red_victory:
@@ -469,17 +452,9 @@ class CheckersGame(SimpleTableLayout):
 
 			with open('smart_vs_smart.csv', 'ab') as f:
 				writer = csv.writer(f)
-				print [1, len(self.black_pieces), len(self.black_kings), len(self.red_pieces), len(self.red_kings)]
 				writer.writerow([1, len(self.black_pieces), len(self.black_kings), len(self.red_pieces), len(self.red_kings)])
 
-			# global iterations
-			# if iterations < max_iterations:
-			# 	iterations += 1
-			# 	self.reset_board()
-			# 	self.cell(0,0).on_press()
-			# else:
-			# 	self.create_victory_screen(False).open()
-			App.get_running_app.stop()
+			quit()
 
 
 
