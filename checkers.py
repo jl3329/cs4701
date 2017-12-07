@@ -385,12 +385,12 @@ class CheckersGame(SimpleTableLayout):
 		if (start_row, start_col) in my_kings:
 			my_kings.remove((start_row, start_col))
 
-		if self.has_black(end_row, end_col) and end_col == 7:
+		if self.has_black(end_row, end_col) and end_col == 7 and not self.has_king(end_row, end_col):
 			if not self.minimaxing:
 				self.make_king(end_row, end_col)
 			self.black_kings.append((end_row, end_col))
 
-		elif self.has_red(end_row, end_col) and end_col == 0:
+		elif self.has_red(end_row, end_col) and end_col == 0 and not self.has_king(end_row, end_col):
 			if not self.minimaxing:
 				self.make_king(end_row, end_col)
 			self.red_kings.append((end_row, end_col))
@@ -448,7 +448,7 @@ class CheckersGame(SimpleTableLayout):
 
 	def on_black_won(self, instance, black_victory):
 		if black_victory:
-			self.create_victory_screen(True).open()
+			# self.create_victory_screen(True).open()
 
 			with open('smart_vs_smart.csv', 'ab') as f:
 				writer = csv.writer(f)
@@ -461,10 +461,11 @@ class CheckersGame(SimpleTableLayout):
 			# 	self.cell(0,0).on_press()
 			# else:
 			# 	self.create_victory_screen(True).open()
+			App.get_running_app.stop()
 
 	def on_red_won(self, instance, red_victory):
 		if red_victory:
-			self.create_victory_screen(False).open()
+			# self.create_victory_screen(False).open()
 
 			with open('smart_vs_smart.csv', 'ab') as f:
 				writer = csv.writer(f)
@@ -478,6 +479,8 @@ class CheckersGame(SimpleTableLayout):
 			# 	self.cell(0,0).on_press()
 			# else:
 			# 	self.create_victory_screen(False).open()
+			App.get_running_app.stop()
+
 
 
 	def on_black_pieces(self, instance, pieces):
