@@ -481,7 +481,7 @@ class CheckersGame(SimpleTableLayout):
 
 	def smart_move(self):
 		if self.get_all_legal_moves():
-			m = Minimax()
+			m = Minimax(6)
 			best_move = Minimax.start(m,self)
 			if best_move == None:
 				self.random_move()
@@ -493,7 +493,8 @@ class CheckersGame(SimpleTableLayout):
 
 class Minimax():
 
-	depth = 6
+	def __init__(self, depth):
+		self.depth = depth
 
 	def copy_board(self,board):
 		new_board = CheckersGame(rows=8, cols=8)
