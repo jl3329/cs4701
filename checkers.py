@@ -26,14 +26,14 @@ EMPTY = 0
 class CheckersApp(App):
 	def build(self):
 		game = CheckersGame(rows=8, cols=8)
-		# menu = game.create_menu()
-		# menu.open()
-		game.AIvAI = True
+		menu = game.create_menu()
+		menu.open()
+		# game.AIvAI = True
 		# game.random = True
 		# game.more_random = True
-		game.initialize_board(None)
-		game.cell(0,0).on_press()
-		self.game = game
+		# game.initialize_board(None)
+		# game.cell(0,0).on_press()
+		# self.game = game
 		return game
 
 class CheckersTile(Button):
@@ -112,6 +112,11 @@ class CheckersTile(Button):
 			piece_col = CheckersTile.selected.col
 			self.parent.move_piece(piece_row, piece_col, self.row, self.col)
 			self.empty_possible_moves()
+			if self.parent.all_legal_moves == None and not self.parent.HvH:
+				if self.parent.random:
+					self.parent.random_move()
+				else:
+					self.parent.smart_move()
 
 	def on_is_possible_move(self, instance, possible):
 		if possible:
@@ -314,6 +319,7 @@ class CheckersGame(SimpleTableLayout):
 
 			return right_direction and self.has_empty(end_row, end_col)
 
+
 	#returns an array of tuples indicating legal positions to move to
 	def get_legal_moves(self, row, col, blacks_turn):
 		if self.has_empty(row, col):
@@ -410,7 +416,7 @@ class CheckersGame(SimpleTableLayout):
 			self.board_visual()
 			if self.more_random:
 				self.random_move()
-			elif not self.blacks_turn or self.random == False:
+			elif not self.blacks_turn and self.random == False:
 				self.smart_move()
 			else:
 				self.random_move()
@@ -508,10 +514,10 @@ class Minimax():
 
 	def evaluate(self,board):
 		if board.blacks_turn:
-			return len(board.black_pieces) - len(board.red_pieces)
-		return len(board.red_pieces) - len(board.black_pieces)
-			# return len(board.black_pieces) + len(board.black_kings) - len(board.red_pieces) - len(board.red_kings)
-		# return len(board.red_pieces) + len(board.red_kings) - len(board.black_pieces) - len(board.black_kings)
+			# return len(board.black_pieces) - len(board.red_pieces)
+		# return len(board.red_pieces) - len(board.black_pieces)
+			return len(board.black_pieces) + len(board.black_kings) - len(board.red_pieces) - len(board.red_kings)
+		return len(board.red_pieces) + len(board.red_kings) - len(board.black_pieces) - len(board.black_kings)
 
 	def negamax(self,board,depth,alpha,beta):
 		if depth==0:
